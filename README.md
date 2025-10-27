@@ -60,17 +60,6 @@ product-manager-app/
 
 Download and install PostgreSQL from the official website.
 
-### 2. Create Database
-
-Open PostgreSQL command line or pgAdmin and run:
-
-```sql
-CREATE DATABASE productdb;
-```
-
-### 3. Verify Connection
-
-Make sure PostgreSQL is running on `localhost:5432` (default port).
 
 ## 🔧 Backend Setup (Spring Boot)
 
@@ -82,32 +71,30 @@ cd backend
 
 ### 2. Configure Database Connection
 
-Edit `src/main/resources/application.properties`:
+Edit `src/main/resources/application-docker.properties`:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/productdb
+spring.datasource.url=jdbc:postgresql://db:5432/productdb_docker
 spring.datasource.username=postgres
-spring.datasource.password=your_password_here
+spring.datasource.password=password
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 
 server.port=8080
+
+spring.web.cors.allowed-origins=http://localhost:3000
+spring.web.cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS
+spring.web.cors.allowed-headers=*
 ```
 
 **⚠️ Important:** Replace `your_password_here` with your actual PostgreSQL password.
 
-### 3. Install Dependencies
+### 3. Run the Application
 
 ```bash
-mvn clean install
-```
-
-### 4. Run the Application
-
-```bash
-mvn spring-boot:run
+docker compose up --build
 ```
 
 The backend will start on `http://localhost:8080`
