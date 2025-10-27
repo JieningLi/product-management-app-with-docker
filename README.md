@@ -24,22 +24,26 @@ Before you begin, ensure you have the following installed:
 
 ```
 product-manager-app/
-├── product-manager-backend/                    # Spring Boot application
+│
+├── product-manager-backend/            # Spring Boot backend service (Dockerized)
 │   ├── src/
 │   │   └── main/
-│   │       ├── java/
-│   │       │   └── com/example/productmanager/
-│   │       │       ├── ProductManagerApplication.java
-│   │       │       ├── controller/
-│   │       │       │   └── ProductController.java
-│   │       │       ├── model/
-│   │       │       │   └── Product.java
-│   │       │       └── repository/
-│   │       │           └── ProductRepository.java
+│   │       ├── java/com/example/productmanager/
+│   │       │   ├── ProductManagerApplication.java
+│   │       │   ├── controller/
+│   │       │   │   └── ProductController.java
+│   │       │   ├── model/
+│   │       │   │   └── Product.java
+│   │       │   └── repository/
+│   │       │       └── ProductRepository.java
 │   │       └── resources/
-│   │           └── application.properties
-│   └── pom.xml
-└── product-manager-frontend/                   # React application
+│   │           ├── application.properties
+│   │           └── application-docker.properties
+│   ├── pom.xml
+│   ├── Dockerfile
+│   └── docker-compose.yml              # Docker for backend + PostgreSQL
+│
+└── product-manager-frontend/           # React frontend (run locally with npm)
     ├── public/
     │   └── index.html
     ├── src/
@@ -47,6 +51,7 @@ product-manager-app/
     │   ├── index.js
     │   └── index.css
     └── package.json
+
 ```
 
 ## 🗄️ Database Setup
