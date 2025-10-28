@@ -7,6 +7,10 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Inline edit state
+  const [editingId, setEditingId] = useState(null);
+  const [editingName, setEditingName] = useState('');
+
   const API_URL = 'http://localhost:8080/api/products';
 
   useEffect(() => {
@@ -36,16 +40,14 @@ function App() {
       setLoading(true);
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newProductName }),
       });
 
       if (!response.ok) throw new Error('Failed to create product');
 
       const newProduct = await response.json();
-      setProducts([...products, newProduct]);
+      setProducts((prev) => [...prev, newProduct]);
       setNewProductName('');
       setError('');
     } catch (err) {
@@ -55,6 +57,52 @@ function App() {
     }
   };
 
+  // --- Inline edit handlers ---
+  const startEdit = (product) => {
+    setEditingId(product.id);
+    setEditingName(product.name ?? '');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingName('');
+  };
+
+  const saveEdit = async () => {
+    const name = editingName.trim();
+    if (!name || editingId == null) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingId, name }),
+      });
+      if (!response.ok) throw new Error('Failed to update product');
+
+      const updated = await response.json();
+      setProducts((prev) =>
+        prev.map((p) => (p.id === editingId ? { ...p, name: updated.name } : p))
+      );
+      setError('');
+    } catch (err) {
+      setError('Failed to update product. Please try again.');
+    } finally {
+      setLoading(false);
+      cancelEdit();
+    }
+  };
+
+  const handleEditKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveEdit();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelEdit();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
@@ -77,10 +125,8 @@ function App() {
                 type="text"
                 value={newProductName}
                 onChange={(e) => setNewProductName(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    createProduct(e);
-                  }
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') createProduct(e);
                 }}
                 placeholder="Enter product name..."
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
@@ -111,23 +157,49 @@ function App() {
               </div>
             ) : (
               <div className="space-y-3">
-                {products.map((product) => (
-                  <div
-                    key={product.id}
-                    className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                        <Package className="w-5 h-5 text-indigo-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-800">{product.name}</p>
-                        <p className="text-sm text-gray-500">ID: {product.id}</p>
-                      </div>
+                {products.map((product) => {
+                  const isEditing = editingId === product.id;
+                  return (
+                    <div
+                      key={product.id}
+                      className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                          <Package className="w-5 h-5 text-indigo-600" />
+                        </div>
 
+                        <div className="flex-1">
+                          {!isEditing ? (
+                            <div className="flex items-center gap-3">
+                              <p className="font-medium text-gray-800">{product.name}</p>
+                              <button
+                                className="text-sm text-indigo-600 hover:underline"
+                                onClick={() => startEdit(product)}
+                                disabled={loading}
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          ) : (
+                            <input
+                              autoFocus
+                              type="text"
+                              value={editingName}
+                              onChange={(e) => setEditingName(e.target.value)}
+                              onKeyDown={handleEditKeyDown}
+                              className="px-3 py-2 border border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                              placeholder="Edit product name"
+                              // keep focus editing until Enter/Esc
+                              onBlur={() => { }}
+                            />
+                          )}
+                          <p className="text-sm text-gray-500">ID: {product.id}</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

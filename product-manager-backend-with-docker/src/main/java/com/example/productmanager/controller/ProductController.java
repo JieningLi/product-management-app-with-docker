@@ -29,4 +29,27 @@ public class ProductController {
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
     }
     
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
+        Optional<Product> productOptional = productRepository.findById(id);
+        if (productOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        Product existingProduct = productOptional.get();
+        existingProduct.setName(updatedProduct.getName());
+        Product savedProduct = productRepository.save(existingProduct);
+        return new ResponseEntity<>(savedProduct, HttpStatus.OK);
+    }
+    
+    @GetMapping("/{name}")
+    public ResponseEntity<List<Product>> getProductByName(@PathVariable String name) {
+    	
+    	List<Product> products = productRepository.findByNameIgnoreCase(name);
+    	if (products.isEmpty()) {
+    		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    	return new ResponseEntity<>(products, HttpStatus.OK);
+    	
+    }
+    
 }
